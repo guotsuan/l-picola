@@ -774,6 +774,19 @@ void Output(double A, double Z, double Dv, double Dv2) {
         header.OmegaLambda = OmegaLambda;
         header.HubbleParam = HubbleParam;
 
+        // write head
+#ifdef GADGET_FORMAT_2
+        int blocker;
+        char* label;
+        blocker=8;
+        label= "HEAD";
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+        my_fwrite(label, sizeof(char), 4, fp);
+        dummy = sizeof(header) + 2 * sizeof(int);
+        my_fwrite(&dummy, sizeof(int), 1, fp);
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+#endif
+        // write header
         dummy = sizeof(header);
         my_fwrite(&dummy, sizeof(dummy), 1, fp);
         my_fwrite(&header, sizeof(header), 1, fp);
@@ -790,6 +803,15 @@ void Output(double A, double Z, double Dv, double Dv2) {
 
         // Remember to add the ZA and 2LPT velocities back on and convert to PTHalos velocity units
 
+        // write coordinates head
+#ifdef GADGET_FORMAT_2
+        dummy = sizeof(float) * 3 * NumPart + sizeof(int) * 2;
+        label = "POS ";
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+        my_fwrite(label, sizeof(char), 4, fp);
+        my_fwrite(&dummy, sizeof(int), 1, fp);
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+#endif
         // write coordinates
         dummy = sizeof(float) * 3 * NumPart;
         my_fwrite(&dummy, sizeof(dummy), 1, fp);
@@ -804,7 +826,17 @@ void Output(double A, double Z, double Dv, double Dv2) {
         if(pc > 0) my_fwrite(block, sizeof(float), 3 * pc, fp);
         my_fwrite(&dummy, sizeof(dummy), 1, fp);
 
+      // write velocity head
+#ifdef GADGET_FORMAT_2
+        label = "VEL ";
+        dummy = sizeof(float) * 3 * NumPart + sizeof(int) * 2;
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+        my_fwrite(label, sizeof(char), 4, fp);
+        my_fwrite(&dummy, sizeof(int), 1, fp);
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+#endif
         // write velocities
+        dummy = sizeof(float) * 3 * NumPart;
         my_fwrite(&dummy, sizeof(dummy), 1, fp);
 	printf("%12.6lf, %12.6lf, %12.6lf\n", sumx, sumy, sumz);
         for(n = 0, pc = 0; n < NumPart; n++) {
@@ -821,6 +853,15 @@ void Output(double A, double Z, double Dv, double Dv2) {
         my_fwrite(&dummy, sizeof(dummy), 1, fp);
 
 #ifdef PARTICLE_ID
+
+#ifdef GADGET_FORMAT_2
+        dummy = sizeof(unsigned long long) * NumPart + sizeof(int) * 2;
+        label = "ID  ";
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+        my_fwrite(label, sizeof(char), 4, fp);
+        my_fwrite(&dummy, sizeof(int), 1, fp);
+        my_fwrite(&blocker, sizeof(int), 1, fp);
+#endif
         blockid = (unsigned long long *)block;
         blockmaxlen = bytes / sizeof(unsigned long long);
 
